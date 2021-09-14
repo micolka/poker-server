@@ -9,6 +9,7 @@ const { addUser, getUser, deleteUser, getUsers } = require('./users')
 app.use(cors())
 
 io.on('connection', (socket) => {
+    console.log('connect user' + socket.id);
     socket.on('login', ({ name, room }, callback) => {
         const { user, error } = addUser(socket.id, name, room)
         if (error) return callback(error)
@@ -21,6 +22,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('sendMessage', message => {
+        console.log('message user' + socket.id);
         const user = getUser(socket.id)
         io.in(user.room).emit('message', { user: user.name, text: message });
     })
