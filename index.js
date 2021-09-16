@@ -3,22 +3,35 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
-const { addUser, getUser, deleteUser, getUsers } = require('./users')
+const { addUser, getUser, deleteUser, getUsers, findRoom } = require('./users')
 
 
 app.use(cors())
 
 io.on('connection', (socket) => {
-    console.log('connect user' + socket.id);
-    socket.on('login', ({ name, room }, callback) => {
-        const { user, error } = addUser(socket.id, name, room)
+    socket.on('createRoom', ( userData, callback ) => {
+        const master = true;
+        const { user, error } = addUser(socket.id, userData, socket.id, master)
+        if (error) return callback(error)
+        socket.join(user.room)
+        io.in(user.room).emit('users', getUsers(user.room))
+        callback(user.room)
+    })
+
+    socket.on('checkRoom', ( room, callback ) => {      
+        callback(findRoom(room))
+    })
+
+    socket.on('login', (userData, room, callback) => {
+        const master = false;
+        const { user, error } = addUser(socket.id, userData, room, master)
         if (error) return callback(error)
         socket.join(user.room)
         // все получают - он нет
-        socket.in(room).emit('notification', { title: 'Someone\'s here', description: `${user.name} just entered the room` })
+        // socket.in(room).emit('notification', { title: 'Someone\'s here', description: `${user.name} just entered the room` })
         // все получают - он тоже
         io.in(room).emit('users', getUsers(room))
-        callback()
+        callback(user.name, user.room)
     })
 
     socket.on('sendMessage', message => {
@@ -28,9 +41,9 @@ io.on('connection', (socket) => {
     })
 
     socket.on("disconnect", () => {
-        console.log("User disconnected");
         const user = deleteUser(socket.id)
         if (user) {
+            console.log(`User ${user.name} disconnected`);
             io.in(user.room).emit('notification', { title: 'Someone just left', description: `${user.name} just left the room` })
             io.in(user.room).emit('users', getUsers(user.room))
         }
