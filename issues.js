@@ -28,9 +28,10 @@ const deleteIssue = (issueID) => {
 }
 
 const editIssue = (issueData) => {
+  if (!issueData) return { error: "issueData is required" }
   const index = issues.findIndex((issue) => issue.issueID === issueData.issueID)
   issues[index] = issueData
-  return issues[index]
+  return {issue: issues[index]}
 }
 
 const getIssues = (room) => issues.filter(issue => issue.room === room)

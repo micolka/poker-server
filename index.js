@@ -16,7 +16,7 @@ io.on('connection', (socket) => {
         if (error) return callback(error)
         socket.join(user.room)
         io.in(user.room).emit('users', getUsers(user.room))
-        callback(user.room)
+        callback()
     })
 
     socket.on('checkRoom', ( room, callback ) => {      
@@ -32,20 +32,20 @@ io.on('connection', (socket) => {
         // socket.in(room).emit('notification', { title: 'Someone\'s here', description: `${user.name} just entered the room` })
         // все получают - он тоже
         io.in(room).emit('users', getUsers(room))
-        callback(user.name, user.room)
+        io.in(room).emit('issues', getIssues(room))
+        callback()
     })
 
     socket.on('addIssue', (issueData, room, callback) => {
         const { issue, error } = addIssue(issueData, room)
         if (error) return callback(error)
         io.in(issue.room).emit('issues', getIssues(issue.room))
-        callback(issue.name)
     })
 
-    socket.on('editIssue', (issueData, callback) => {
-        const issue = editIssue(issueData)
+    socket.on('editIssue', (issueData) => {
+        const { issue, error } = editIssue(issueData)
+        if (error) return callback(error)
         io.in(issue.room).emit('issues', getIssues(issue.room))
-        callback(issue.name)
     })
 
     socket.on('deleteIssue', (issueID, callback) => {
