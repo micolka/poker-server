@@ -1,6 +1,6 @@
 const users = []
 
-const addUser = (id, userData, room, isMaster) => {
+const addUser = (playerId, userData, room, isMaster) => {
     // const existingUser = users.find(user => user.name.trim().toLowerCase() === name.trim().toLowerCase())
 
     // if (existingUser) return { error: "Username has already been taken" }
@@ -8,18 +8,18 @@ const addUser = (id, userData, room, isMaster) => {
     if (!userData) return { error: "userData is required" }
     if (!room) return { error: "Room is required" }
 
-    const user = { id, ...userData, room,  isMaster }
+    const user = { playerId, ...userData, room,  isMaster }
     users.push(user)
     return { user }
 }
 
-const getUser = id => {
-    let user = users.find(user => user.id == id)
+const getUser = playerId => {
+    let user = users.find(user => user.playerId == playerId)
     return user
 }
 
-const deleteUser = (id) => {
-    const index = users.findIndex((user) => user.id === id);
+const deleteUser = (playerId) => {
+    const index = users.findIndex((user) => user.playerId === playerId);
     if (index !== -1) return users.splice(index, 1)[0];
 }
 

@@ -4,6 +4,7 @@ const io = require('socket.io')(http)
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
 const { addUser, getUser, deleteUser, getUsers, findRoom } = require('./users')
+const { addIssue, getIssue, deleteIssue, getIssues} = require('./issues')
 
 
 app.use(cors())
@@ -32,6 +33,14 @@ io.on('connection', (socket) => {
         // все получают - он тоже
         io.in(room).emit('users', getUsers(room))
         callback(user.name, user.room)
+    })
+
+    socket.on('addIssue', (issueData, room, callback) => {
+        const { issue, error } = addIssue(issueData, room)
+        if (error) return callback(error)
+        io.in(room).emit('issues', getIssues(room))
+        console.log(issue)
+        callback(issue.title)
     })
 
     socket.on('sendMessage', message => {
