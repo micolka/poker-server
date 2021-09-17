@@ -7,28 +7,34 @@ const addIssue = (issueData, room) => {
   if (!issueData) return { error: "issueData is required" }
   if (!room) return { error: "Room is required" }
 
-  let id = undefined
+  let issueID = undefined
   do {
-    id = IdGenerator()
-  } while (issues.find( issue => issue.id === id))
+    issueID = IdGenerator()
+  } while (issues.find( issue => issue.issueID === issueID))
 
-  const issue = {id, ...issueData, room}
+  const issue = {issueID, ...issueData, room}
   issues.push(issue)
   return {issue}
 }
 
-const getIssue = id => { 
-  let issue = issues.find((issue) => {id === issue.id})
+const getIssue = issueID => { 
+  let issue = issues.find((issue) => {issueID === issue.issueID})
   return issue
 }
 
-const deleteIssue = (id) => {
-  const index = issues.findIndex((issue) => issue.id === id);
-  if (index !== -1) return issues.splice(index, 1)[0];
+const deleteIssue = (issueID) => {
+  const index = issues.findIndex((issue) => issue.issueID === issueID)
+  if (index !== -1) return issues.splice(index, 1)[0]
+}
+
+const editIssue = (issueData) => {
+  const index = issues.findIndex((issue) => issue.issueID === issueData.issueID)
+  issues[index] = issueData
+  return issues[index]
 }
 
 const getIssues = (room) => issues.filter(issue => issue.room === room)
 
 // TODO!! del issues on disconnect of master
 
-module.exports = { addIssue, getIssue, deleteIssue, getIssues}
+module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue}
