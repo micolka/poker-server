@@ -1,6 +1,6 @@
 const users = []
 
-const addUser = (playerId, userData, room, isMaster) => {
+const addUser = (playerId, userData, room, master) => {
     // const existingUser = users.find(user => user.name.trim().toLowerCase() === name.trim().toLowerCase())
 
     // if (existingUser) return { error: "Username has already been taken" }
@@ -8,7 +8,7 @@ const addUser = (playerId, userData, room, isMaster) => {
     if (!userData) return { error: "userData is required" }
     if (!room) return { error: "Room is required" }
 
-    const user = { playerId, ...userData, room,  isMaster }
+    const user = { playerId, ...userData, room,  master }
     users.push(user)
     return { user }
 }

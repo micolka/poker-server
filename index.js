@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
         if (error) return callback(error)
         socket.join(user.room)
         // все получают - он нет
-        // socket.in(room).emit('notification', { title: 'Someone\'s here', description: `${user.name} just entered the room` })
+        socket.in(room).emit('notification', { description: `${user.name} just entered the room` })
         // все получают - он тоже
         io.in(room).emit('users', getUsers(room))
         io.in(room).emit('issues', getIssues(room))
@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
         const user = deleteUser(socket.id)
         if (user) {
             console.log(`User ${user.name} disconnected`);
-            io.in(user.room).emit('notification', { title: 'Someone just left', description: `${user.name} just left the room` })
+            io.in(user.room).emit('notification', { description: `${user.name} just left the room` })
             io.in(user.room).emit('users', getUsers(user.room))
         }
     })
