@@ -14,6 +14,7 @@ io.on('connection', (socket) => {
         const master = true;
         const { user, error } = addUser(socket.id, userData, socket.id, master)
         if (error) return callback(error)
+        console.log(`User ${user.name} connected`);
         socket.join(user.room)
         io.in(user.room).emit('users', getUsers(user.room))
         callback()
@@ -55,9 +56,9 @@ io.on('connection', (socket) => {
     })
 
     socket.on('sendMessage', message => {
-        console.log('message user' + socket.id);
+        console.log('message user ' + socket.id);
         const user = getUser(socket.id)
-        io.in(user.room).emit('message', { user: user.name, text: message });
+        io.in(user.room).emit('message', { playerId: user.playerId, text: message });
     })
 
     socket.on("disconnect", () => {
