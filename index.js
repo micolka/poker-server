@@ -14,7 +14,7 @@ io.on('connection', (socket) => {
         const master = true;
         const { user, error } = addUser(socket.id, userData, socket.id, master)
         if (error) return callback(error)
-        console.log(`User ${user.name} connected`);
+        console.log(`User ${user.name} connected`)
         socket.join(user.room)
         io.in(user.room).emit('users', getUsers(user.room))
         callback()
@@ -35,6 +35,15 @@ io.on('connection', (socket) => {
         io.in(room).emit('users', getUsers(room))
         io.in(room).emit('issues', getIssues(room))
         callback()
+    })
+
+    socket.on('kickPlayer', (id) => {
+        const user = deleteUser(id)
+        if (user) {
+            console.log(`User ${user.name} kicked by master`)
+            io.in(user.room).emit('notification', { description: `${user.name} kicked by master` })
+            io.in(user.room).emit('users', getUsers(user.room))
+        }
     })
 
     socket.on('addIssue', (issueData, room, callback) => {
@@ -58,7 +67,7 @@ io.on('connection', (socket) => {
     socket.on('sendMessage', message => {
         console.log('message user ' + socket.id);
         const user = getUser(socket.id)
-        io.in(user.room).emit('message', { playerId: user.playerId, text: message });
+        io.in(user.room).emit('message', { user, message })
     })
 
     socket.on("disconnect", () => {
@@ -76,5 +85,5 @@ app.get('/', (req, res) => {
 })
 
 http.listen(PORT, () => {
-    console.log(`Listening to ${PORT}`);
+    console.log(`Listening to ${PORT}`)
 })
