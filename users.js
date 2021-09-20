@@ -19,8 +19,8 @@ const getUser = playerId => {
 }
 
 const deleteUser = (playerId) => {
-    const index = users.findIndex((user) => user.playerId === playerId);
-    if (index !== -1) return users.splice(index, 1)[0];
+    const index = users.findIndex((user) => user.playerId === playerId)
+    if (index !== -1) return users.splice(index, 1)[0]
 }
 
 const getUsers = (room) => users.filter(user => user.room === room)

@@ -4,7 +4,8 @@ const io = require('socket.io')(http)
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
 const { addUser, getUser, deleteUser, getUsers, findRoom } = require('./users')
-const { addIssue, getIssue, deleteIssue, getIssues, editIssue} = require('./issues')
+const { addIssue, deleteIssue, getIssues, editIssue } = require('./issues')
+const { addPool, delPool, putVote, checkPoolResults } = require('./kickPool')
 
 
 app.use(cors())
@@ -44,6 +45,37 @@ io.on('connection', (socket) => {
             io.in(user.room).emit('notification', { description: `${user.name} kicked by master` })
             io.in(user.room).emit('users', getUsers(user.room))
         }
+    })
+
+    socket.on('triggerKickPool', (targetId, initiatorId) => {
+        const user = getUser(targetId)
+        if (user && !user.master) {
+            addPool(targetId, initiatorId)
+            io.in(user.room).emit('startKickPool', targetId, initiatorId)
+            console.log(`User ${user.name} kicking pool is started...`)
+        }
+
+        // settimeout variant
+    })
+
+    socket.on('setKickDecision', (targetId, answer) => {
+        const result = putVote(targetId, answer, socket.id)
+        if (result === undefined) return
+        if (result === 'in progress') return
+        if (result === true) {
+            const user = deleteUser(targetId)
+            if (user) {
+                console.log(`User ${user.name} kicked by voting`)
+                io.in(user.room).emit('notification', { description: `${user.name} kicked by voting` })
+                io.in(user.room).emit('users', getUsers(user.room))
+            }
+        } 
+        if (result === false) {
+            const user = getUser(targetId)
+            console.log(`User ${user.name} wasn't kicked by voting`)
+            io.in(user.room).emit('notification', { description: `${user.name} will stay in room` })
+        }
+        delPool(targetId)
     })
 
     socket.on('addIssue', (issueData, room, callback) => {
