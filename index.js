@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000
 const { addUser, getUser, deleteUser, getUsers, findRoom } = require('./users')
 const { addIssue, deleteIssue, getIssues, editIssue } = require('./issues')
 const { addPool, delPool, putVote, checkPoolResults } = require('./kickPool')
-
+const { saveSettings, getSettings, deleteSettings } = require('./settings')
 
 app.use(cors())
 
@@ -15,7 +15,7 @@ io.on('connection', (socket) => {
         const master = true;
         const { user, error } = addUser(socket.id, userData, socket.id, master)
         if (error) return callback(error)
-        console.log(`User ${user.name} connected`)
+        console.log(`User ${user.name} created new room`)
         socket.join(user.room)
         io.in(user.room).emit('users', getUsers(user.room))
         callback()
@@ -55,7 +55,7 @@ io.on('connection', (socket) => {
             console.log(`User ${user.name} kicking pool is started...`)
         }
 
-        // settimeout variant
+        // TODO setTimeout variant
     })
 
     socket.on('setKickDecision', (targetId, answer) => {
@@ -96,6 +96,13 @@ io.on('connection', (socket) => {
         callback(issue.name)
     })
 
+    socket.on('saveSettings', (data, room, callback) => {
+        const { settings, error } = saveSettings(data, room)
+        if (error) return callback(error)
+        io.in(settings.room).emit('settings', settings)
+        callback()
+    })
+
     socket.on('sendMessage', message => {
         console.log('message user ' + socket.id);
         const user = getUser(socket.id)
@@ -104,6 +111,7 @@ io.on('connection', (socket) => {
 
     socket.on("disconnect", () => {
         const user = deleteUser(socket.id)
+        // TODO если отключился мастер нужно удалять всю комнату и кикать всех
         if (user) {
             console.log(`User ${user.name} disconnected`);
             io.in(user.room).emit('notification', { description: `${user.name} just left the room` })

@@ -18,7 +18,7 @@ const addIssue = (issueData, room) => {
 }
 
 const getIssue = issueID => { 
-  let issue = issues.find((issue) => {issueID === issue.issueID})
+  let issue = issues.find((issue) => issueID === issue.issueID)
   return issue
 }
 
