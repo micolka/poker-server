@@ -1,4 +1,4 @@
-const users = []
+let users = []
 
 const addUser = (playerId, userData, room, master) => {
     // const existingUser = users.find(user => user.name.trim().toLowerCase() === name.trim().toLowerCase())
@@ -25,9 +25,14 @@ const deleteUser = (playerId) => {
 
 const getUsers = (room) => users.filter(user => user.room === room)
 
+const deleteAllUsers = (room) => {
+    const restUsers = users.filter(user => user.room !== room)
+    users = [...restUsers]
+}
+
 const findRoom = (room) => {
     const index = users.findIndex(user => user.room === room)
     return (index !== -1) ? true : false
 }
 
-module.exports = { addUser, getUser, deleteUser, getUsers, findRoom }
+module.exports = { addUser, getUser, deleteUser, getUsers, findRoom, deleteAllUsers }

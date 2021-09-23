@@ -62,4 +62,9 @@ const delPool = (targetId) => {
   if (index !== -1) return pools.splice(index, 1)[0]
 }
 
-module.exports = { addPool, getPool, putVote, checkPoolResults, delPool }
+const deleteAllPools = (room) => {
+  const users = getUsers(room)
+  users.forEach(el => delPool(el.playerId))
+} 
+
+module.exports = { addPool, getPool, putVote, checkPoolResults, delPool, deleteAllPools }

@@ -3,9 +3,9 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
-const { addUser, getUser, deleteUser, getUsers, findRoom } = require('./users')
-const { addIssue, deleteIssue, getIssues, editIssue } = require('./issues')
-const { addPool, delPool, putVote, checkPoolResults } = require('./kickPool')
+const { addUser, getUser, deleteUser, getUsers, findRoom, deleteAllUsers } = require('./users')
+const { addIssue, deleteIssue, getIssues, editIssue, deleteAllIssues } = require('./issues')
+const { addPool, delPool, putVote, deleteAllPools } = require('./kickPool')
 const { saveSettings, getSettings, deleteSettings } = require('./settings')
 
 app.use(cors())
@@ -35,14 +35,15 @@ io.on('connection', (socket) => {
         // все получают - он тоже
         io.in(room).emit('users', getUsers(room))
         io.in(room).emit('issues', getIssues(room))
+        io.in(room).emit('settings', getSettings(room))
         callback()
     })
 
-    socket.on('kickPlayer', (id) => {
+    socket.on('kickPlayer', (id, message) => {
         const user = deleteUser(id)
         if (user) {
-            console.log(`User ${user.name} kicked by master`)
-            io.in(user.room).emit('notification', { description: `${user.name} kicked by master` })
+            console.log(`User ${user.name} ${message}`)
+            io.in(user.room).emit('notification', { description: `${user.name} ${message}` })
             io.in(user.room).emit('users', getUsers(user.room))
         }
     })
@@ -55,7 +56,7 @@ io.on('connection', (socket) => {
             console.log(`User ${user.name} kicking pool is started...`)
         }
 
-        // TODO setTimeout variant
+        // TODO setTimeout variant (?)
     })
 
     socket.on('setKickDecision', (targetId, answer) => {
@@ -109,13 +110,35 @@ io.on('connection', (socket) => {
         io.in(user.room).emit('message', { user, message })
     })
 
+    socket.on('cancelGame', (roomId, message) => {
+        io.in(roomId).emit('warning', { description: `${message}` })
+        deleteAllPools(roomId)
+        deleteAllUsers(roomId)
+        deleteAllIssues(roomId)
+        deleteSettings(roomId)
+        io.in(roomId).emit('users', [])
+        io.in(roomId).emit('issues', [])
+        console.log(message);
+    })
+
     socket.on("disconnect", () => {
         const user = deleteUser(socket.id)
-        // TODO если отключился мастер нужно удалять всю комнату и кикать всех
         if (user) {
-            console.log(`User ${user.name} disconnected`);
-            io.in(user.room).emit('notification', { description: `${user.name} just left the room` })
-            io.in(user.room).emit('users', getUsers(user.room))
+            if (user.master) {
+                io.in(user.room).emit('warning', { description: `Master ${user.name} disconnected` })
+                deleteAllPools(user.room)
+                deleteAllUsers(user.room)
+                deleteAllIssues(user.room)
+                deleteSettings(user.room)
+                io.in(user.room).emit('users', [])
+                io.in(user.room).emit('issues', [])
+                console.log(`Master ${user.name} disconnected`);
+            } else {
+                io.in(user.room).emit('notification', { description: `${user.name} just left the room` })
+                io.in(user.room).emit('users', getUsers(user.room)) 
+                console.log(`User ${user.name} disconnected`)
+            }
+
         }
     })
 })
