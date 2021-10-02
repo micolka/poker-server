@@ -4,7 +4,7 @@ const io = require('socket.io')(http)
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
 const { addUser, getUser, deleteUser, getUsers, findRoom, deleteAllUsers } = require('./users')
-const { addIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote } = require('./issues')
+const { addIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote, setIssueVotingDone } = require('./issues')
 const { addPool, delPool, putVote, deleteAllPools } = require('./kickPool')
 const { saveSettings, getSettings, deleteSettings } = require('./settings')
 
@@ -93,6 +93,12 @@ io.on('connection', (socket) => {
 
     socket.on('setIssueVote', (userId, issueId, cardValue, callback) => {
         const { issue, error } = setIssueVote(userId, issueId, cardValue)
+        if (error) return callback(error)
+        io.in(issue.room).emit('issues', getIssues(issue.room))
+    })
+
+    socket.on('setIssueVotingDone', (issueId, isVotingPassed, callback) => {
+        const { issue, error } = setIssueVotingDone(issueId, isVotingPassed)
         if (error) return callback(error)
         io.in(issue.room).emit('issues', getIssues(issue.room))
     })

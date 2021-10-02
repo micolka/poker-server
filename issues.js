@@ -46,6 +46,13 @@ const setIssueVote = (userId, issueId, cardValue) => {
   return {issue}
 }
 
+const setIssueVotingDone = (issueId, isVotingPassed) => {
+  const issue = getIssue(issueId)
+  if (!issue) return { error: `Can't find issue: ${issueId}` }
+  issue.poolResults.isVotingPassed = isVotingPassed
+  return {issue}
+}
+
 const getIssues = (room) => issues.filter(issue => issue.room === room)
 
-module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote}
+module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote, setIssueVotingDone }
