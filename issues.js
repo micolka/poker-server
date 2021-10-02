@@ -39,6 +39,13 @@ const editIssue = (issueData) => {
   return {issue: issues[index]}
 }
 
+const setIssueVote = (userId, issueId, cardValue) => {
+  const issue = getIssue(issueId)
+  if (!issue) return { error: `Can't find issue: ${issueId}` }
+  issue.poolResults.votes = {...issue.poolResults.votes, [userId]: cardValue}
+  return {issue}
+}
+
 const getIssues = (room) => issues.filter(issue => issue.room === room)
 
-module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues}
+module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote}
