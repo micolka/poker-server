@@ -42,7 +42,19 @@ const editIssue = (issueData) => {
 const setIssueVote = (userId, issueId, cardValue) => {
   const issue = getIssue(issueId)
   if (!issue) return { error: `Can't find issue: ${issueId}` }
-  issue.poolResults.votes = {...issue.poolResults.votes, [userId]: cardValue}
+  if (cardValue === 'NONE') {
+    delete issue.poolResults.votes[userId]
+  } else {
+    issue.poolResults.votes = {...issue.poolResults.votes, [userId]: cardValue}
+  }
+  return {issue}
+}
+
+const resetVotes = (issueId) => {
+  const issue = getIssue(issueId)
+  if (!issue) return { error: `Can't find issue: ${issueId}` }
+  issue.poolResults.votes = {}
+  issue.poolResults.isVotingPassed = false
   return {issue}
 }
 
@@ -55,4 +67,6 @@ const setIssueVotingDone = (issueId, isVotingPassed) => {
 
 const getIssues = (room) => issues.filter(issue => issue.room === room)
 
-module.exports = { addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote, setIssueVotingDone }
+module.exports = { 
+  addIssue, getIssue, deleteIssue, getIssues, editIssue, deleteAllIssues, setIssueVote, setIssueVotingDone, resetVotes 
+}
