@@ -117,6 +117,12 @@ io.on('connection', (socket) => {
         callback(issue.name)
     })
 
+     socket.on('deleteAllIssues', (roomId, message) => {
+        deleteAllIssues(roomId)
+        io.in(roomId).emit('issues', getIssues(roomId))
+        console.log(message);
+    }) 
+
     socket.on('saveSettings', (data, room, callback) => {
         const { settings, error } = saveSettings(data, room)
         if (error) return callback(error)
