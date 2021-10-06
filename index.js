@@ -118,9 +118,8 @@ io.on('connection', (socket) => {
     })
 
      socket.on('deleteAllIssues', (roomId, message) => {
-        io.in(roomId).emit('warning', { description: `${message}` })
         deleteAllIssues(roomId)
-        io.in(roomId).emit('issues', [])
+        io.in(roomId).emit('issues', getIssues(roomId))
         console.log(message);
     }) 
 
